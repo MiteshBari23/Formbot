@@ -65,7 +65,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   // Content scripts and the popup can't call chrome.tabs.create with
   // arbitrary external URLs as reliably in all contexts, so route it here.
   if (msg.action === "OPEN_SUPPORT_LINK") {
-    const url = msg.url || "https://ko-fi.com/yourname";
+    const url = msg.url || CONFIG.KOFI_URL;
     chrome.tabs.create({ url });
     sendResponse({ ok: true });
   }

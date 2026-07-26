@@ -7,7 +7,7 @@ let scheduleEnabled = false;
 let selectedDays = [];
 
 const DRAFT_KEY = "formbot_draft";
-const KOFI_URL = "https://ko-fi.com/miteshbari";
+const KOFI_URL = CONFIG.KOFI_URL;
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
