@@ -1,5 +1,7 @@
 // background.js - Service worker for scheduling, tab management, and support link
 
+importScripts("../popup/config.js"); // adjust path if config.js lives elsewhere relative to background.js
+
 // ─── Alarm handler (scheduled form fills) ────────────────────────────────────
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (!alarm.name.startsWith("formbot_")) return;
@@ -64,11 +66,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   // ─── Support link: open Ko-fi (or whichever URL is passed) in a new tab ───
   // Content scripts and the popup can't call chrome.tabs.create with
   // arbitrary external URLs as reliably in all contexts, so route it here.
-  if (msg.action === "OPEN_SUPPORT_LINK") {
-    const url = msg.url || CONFIG.KOFI_URL;
-    chrome.tabs.create({ url });
-    sendResponse({ ok: true });
-  }
+ if (msg.action === "OPEN_SUPPORT_LINK") {
+  const url = msg.url || CONFIG.KOFI_URL;
+  chrome.tabs.create({ url });
+  sendResponse({ ok: true });
+}
 
   return true;
 });
