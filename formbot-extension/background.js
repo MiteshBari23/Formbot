@@ -1,6 +1,6 @@
 // background.js - Service worker for scheduling, tab management, and support link
 
-importScripts("../popup/config.js"); // adjust path if config.js lives elsewhere relative to background.js
+importScripts("/popup/config.js"); // adjust path if config.js lives elsewhere relative to background.js
 
 // ─── Alarm handler (scheduled form fills) ────────────────────────────────────
 chrome.alarms.onAlarm.addListener(async (alarm) => {
