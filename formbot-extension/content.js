@@ -28,7 +28,7 @@
 
     // Google Forms renders questions inside [data-params] divs or role="listitem"
     const questionContainers = document.querySelectorAll(
-      '[role="listitem"], .freebirdFormviewerViewItemsItemItem'
+      '[role="listitem"], .freebirdFormviewerViewItemsItemItem',
     );
 
     questionContainers.forEach((container, idx) => {
@@ -43,7 +43,9 @@
       if (!title) return;
 
       // Detect field type
-      const textInput = container.querySelector('input[type="text"], input[type="email"], input[type="number"]');
+      const textInput = container.querySelector(
+        'input[type="text"], input[type="email"], input[type="number"]',
+      );
       const textarea = container.querySelector("textarea");
       const radios = container.querySelectorAll('[role="radio"]');
       const checkboxes = container.querySelectorAll('[role="checkbox"]');
@@ -57,7 +59,10 @@
       if (radios.length > 0) {
         type = "radio";
         radios.forEach((r) => {
-          const label = r.getAttribute("aria-label") || r.closest("[data-value]")?.getAttribute("data-value") || "";
+          const label =
+            r.getAttribute("aria-label") ||
+            r.closest("[data-value]")?.getAttribute("data-value") ||
+            "";
           if (label) options.push(label);
         });
       } else if (checkboxes.length > 0) {
@@ -69,7 +74,8 @@
       } else if (dropdowns.length > 0) {
         type = "dropdown";
         dropdowns.forEach((d) => {
-          const label = d.getAttribute("data-value") || d.innerText?.trim() || "";
+          const label =
+            d.getAttribute("data-value") || d.innerText?.trim() || "";
           if (label && label !== "Choose") options.push(label);
         });
       } else if (textarea) {
@@ -82,7 +88,9 @@
 
       const required =
         container.querySelector('[aria-required="true"]') !== null ||
-        container.querySelector(".freebirdFormviewerViewItemsItemRequiredAsterisk") !== null;
+        container.querySelector(
+          ".freebirdFormviewerViewItemsItemRequiredAsterisk",
+        ) !== null;
 
       fields.push({ id: `field_${idx}`, title, type, options, required });
     });
@@ -95,7 +103,7 @@
     if (!answers || Object.keys(answers).length === 0) return;
 
     const questionContainers = document.querySelectorAll(
-      '[role="listitem"], .freebirdFormviewerViewItemsItemItem'
+      '[role="listitem"], .freebirdFormviewerViewItemsItemItem',
     );
 
     let filled = 0;
@@ -111,7 +119,9 @@
       const answer = answers[title];
       if (!answer && answer !== 0) return;
 
-      const textInput = container.querySelector('input[type="text"], input[type="email"], input[type="number"]');
+      const textInput = container.querySelector(
+        'input[type="text"], input[type="email"], input[type="number"]',
+      );
       const textarea = container.querySelector("textarea");
       const radios = container.querySelectorAll('[role="radio"]');
       const checkboxes = container.querySelectorAll('[role="checkbox"]');
@@ -162,7 +172,7 @@
     if (autoSubmit) {
       setTimeout(() => {
         const submitBtn = document.querySelector(
-          '[role="button"][jsname="M2UYVd"], .freebirdFormviewerViewNavigationSubmitButton'
+          '[role="button"][jsname="M2UYVd"], .freebirdFormviewerViewNavigationSubmitButton',
         );
         if (submitBtn) {
           submitBtn.click();
@@ -219,7 +229,10 @@
         #formbot-overlay button:hover { opacity: 0.85; }
       </style>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:22px;">🤖</span>
+        <span style="font-size:22px;"><img src="" id="ext-icon">
+<script>
+  document.getElementById('ext-icon').src = chrome.runtime.getURL('icons/icon16.png');
+</script></span>
         <div>
           <div style="font-weight:700;font-size:15px;color:#a78bfa;">FormBot</div>
           <div style="color:#c4b5fd;font-size:13px;">${count} field${count !== 1 ? "s" : ""} filled automatically</div>
@@ -237,17 +250,37 @@
           Review first
         </button>
       </div>
+      <div style="text-align:center;margin-top:-2px;">
+        <a href="#" id="formbot-support-link" style="
+          color:#a78bfa;
+          font-size:12px;
+          text-decoration:none;
+          opacity:0.85;
+        ">☕ Support FormBot</a>
+      </div>
     `;
 
     document.body.appendChild(overlay);
 
-    document.getElementById("formbot-submit-btn").addEventListener("click", () => {
-      const submitBtn = document.querySelector(
-        '[role="button"][jsname="M2UYVd"], .freebirdFormviewerViewNavigationSubmitButton'
-      );
-      if (submitBtn) submitBtn.click();
-      overlay.remove();
-    });
+    document
+      .getElementById("formbot-submit-btn")
+      .addEventListener("click", () => {
+        const submitBtn = document.querySelector(
+          '[role="button"][jsname="M2UYVd"], .freebirdFormviewerViewNavigationSubmitButton',
+        );
+        if (submitBtn) submitBtn.click();
+        overlay.remove();
+      });
+
+    document
+      .getElementById("formbot-support-link")
+      .addEventListener("click", (e) => {
+        e.preventDefault();
+        chrome.runtime.sendMessage({
+          action: "OPEN_SUPPORT_LINK",
+          url: "https://ko-fi.com/yourname",
+        });
+      });
 
     // Auto-dismiss after 30s
     setTimeout(() => overlay?.remove(), 30000);

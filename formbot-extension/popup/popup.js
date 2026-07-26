@@ -1,4 +1,4 @@
-// popup.js v3 — fixes: popup closes on tab open, URL lost on save
+// popup.js v4 — adds Ko-fi support footer on the main forms-list page
 
 let currentStep = 1;
 let extractedFields = [];
@@ -7,6 +7,7 @@ let scheduleEnabled = false;
 let selectedDays = [];
 
 const DRAFT_KEY = "formbot_draft";
+const KOFI_URL = "https://ko-fi.com/miteshbari";
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
@@ -23,6 +24,41 @@ document.addEventListener("DOMContentLoaded", async () => {
   await renderFormsList();
   updateFormCount();
 });
+
+// ─── Support footer (Ko-fi) — injected on the home/forms-list tab ────────────
+function injectSupportFooter() {
+  // Avoid duplicate insertion if renderFormsList runs more than once
+  if (document.getElementById("formbot-support-footer")) return;
+
+  const homeTab = document.getElementById("tab-home");
+  if (!homeTab) return; // safety check in case tab id differs
+
+  const footer = document.createElement("div");
+  footer.id = "formbot-support-footer";
+  footer.style.cssText = `
+    padding: 10px 16px 14px;
+    text-align: center;
+    font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+    border-top: 1px solid var(--border, #2d2d44);
+    margin-top: 8px;
+  `;
+
+  footer.innerHTML = `
+    <a href="#" id="formbot-support-link" style="
+      color: var(--accent, #a78bfa);
+      font-size: 12.5px;
+      text-decoration: none;
+      opacity: 0.85;
+    ">☕ Enjoying FormBot? Support the project</a>
+  `;
+
+  homeTab.appendChild(footer);
+
+  document.getElementById("formbot-support-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    chrome.runtime.sendMessage({ action: "OPEN_SUPPORT_LINK", url: KOFI_URL });
+  });
+}
 
 // ─── Draft: save everything including URL to storage ─────────────────────────
 async function saveDraft(extraFields = {}) {
@@ -133,7 +169,7 @@ async function loadFormFields() {
     return;
   }
 
-  showAlert(alertEl, "info", "⏳ Opening form in background tab…");
+  showAlert(alertEl, "info", "Opening form in background tab…");
   document.getElementById("btn-load-form").disabled = true;
   document.getElementById("btn-load-form").textContent = "Loading…";
 
@@ -144,7 +180,7 @@ async function loadFormFields() {
   const tab = await chrome.tabs.create({ url, active: false });
   await chrome.storage.local.set({ formbot_pending_tab: tab.id });
 
-  showAlert(alertEl, "info", "⏳ Waiting for form to load…");
+  showAlert(alertEl, "info", "Waiting for form to load…");
 
   // Poll the tab until it's complete, then extract
   let attempts = 0;
@@ -422,20 +458,22 @@ async function renderFormsList() {
         <div class="empty-icon">📋</div>
         <p>No forms saved yet.<br/>Click "+ Add Form" to get started.</p>
       </div>`;
-    return;
+  } else {
+    container.innerHTML = `<div class="scroll-area">${list.map(renderFormCard).join("")}</div>`;
+    list.forEach((f) => {
+      document.getElementById(`fill-${f.id}`)?.addEventListener("click", () => fillFormNow(f));
+      document.getElementById(`delete-${f.id}`)?.addEventListener("click", () => deleteForm(f.id));
+      document.getElementById(`toggle-sched-${f.id}`)?.addEventListener("click", () => toggleSchedule(f));
+    });
   }
 
-  container.innerHTML = `<div class="scroll-area">${list.map(renderFormCard).join("")}</div>`;
-  list.forEach((f) => {
-    document.getElementById(`fill-${f.id}`)?.addEventListener("click", () => fillFormNow(f));
-    document.getElementById(`delete-${f.id}`)?.addEventListener("click", () => deleteForm(f.id));
-    document.getElementById(`toggle-sched-${f.id}`)?.addEventListener("click", () => toggleSchedule(f));
-  });
+  // Always ensure the support footer is present on the home/forms-list tab
+  injectSupportFooter();
 }
 
 function renderFormCard(f) {
   const schedChip = f.schedule?.enabled
-    ? `<span class="chip chip-active">⏰ ${f.schedule.time} · ${f.schedule.repeat}</span>`
+    ? `<span class="chip chip-active">${f.schedule.time} · ${f.schedule.repeat}</span>`
     : `<span class="chip chip-idle">No schedule</span>`;
   const autoChip = f.autoSubmit
     ? `<span class="chip chip-active">Auto-submit ON</span>`
@@ -457,7 +495,7 @@ function renderFormCard(f) {
       <div class="form-card-actions">
         <button class="btn btn-primary" id="fill-${f.id}" style="flex:1;font-size:12px;padding:7px 10px;">▶ Fill Now</button>
         <button class="btn btn-secondary" id="toggle-sched-${f.id}" style="font-size:11px;">
-          ${f.schedule?.enabled ? "⏸ Pause" : "⏰ Schedule"}
+          ${f.schedule?.enabled ? "⏸ Pause" : "Schedule"}
         </button>
         <button class="btn btn-danger" id="delete-${f.id}">🗑</button>
       </div>

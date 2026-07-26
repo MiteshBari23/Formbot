@@ -1,4 +1,4 @@
-// background.js - Service worker for scheduling and tab management
+// background.js - Service worker for scheduling, tab management, and support link
 
 // ─── Alarm handler (scheduled form fills) ────────────────────────────────────
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -59,6 +59,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         message: `${msg.filled} fields filled and form submitted automatically.`,
       });
     }
+  }
+
+  // ─── Support link: open Ko-fi (or whichever URL is passed) in a new tab ───
+  // Content scripts and the popup can't call chrome.tabs.create with
+  // arbitrary external URLs as reliably in all contexts, so route it here.
+  if (msg.action === "OPEN_SUPPORT_LINK") {
+    const url = msg.url || "https://ko-fi.com/yourname";
+    chrome.tabs.create({ url });
+    sendResponse({ ok: true });
   }
 
   return true;
