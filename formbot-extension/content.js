@@ -278,7 +278,7 @@
         e.preventDefault();
         chrome.runtime.sendMessage({
           action: "OPEN_SUPPORT_LINK",
-          url: "https://ko-fi.com/yourname",
+          url: CONFIG.KOFI_URL,
         });
       });
 
