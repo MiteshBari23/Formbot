@@ -4,12 +4,9 @@
   "version": "1.2.0",
   "description": "Set it once. FormBot fills your recurring Google Forms automatically, on a schedule.",
   "permissions": [
-    "activeTab",
     "storage",
     "alarms",
-    "notifications",
-    "scripting",
-    "tabs"
+    "notifications"
   ],
   "host_permissions": [
     "https://docs.google.com/forms/*",
